@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Choisir un Pays</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(to bottom right, #cce5ff, #99ccff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    button, select {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      border: none;
+      margin: 0.5rem;
+      font-size: 1rem;
+    }
+    button:hover {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+    }
+    .output {
+      margin-top: 1rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Choisissez votre mode</h1>
+    <div>
+      <button id="worldBtn">🌍 Monde</button>
+      <button id="continentBtn">🗺️ Continent</button>
+    </div>
+    <div id="continentSelectContainer" style="display: none; margin-top: 1rem;">
+      <select id="continentSelect">
+        <option value="">-- Choisir un continent --</option>
+        <option value="Afrique">Afrique</option>
+        <option value="Europe">Europe</option>
+        <option value="Asie">Asie</option>
+        <option value="Amérique">Amérique</option>
+        <option value="Océanie">Océanie</option>
+      </select>
+    </div>
+    <button id="chooseBtn">Choisir un pays</button>
+    <div class="output" id="output"></div>
+    <button id="resetBtn">Réinitialiser</button>
+  </div>
+
+  <script>
+    const continents = {
+      "Afrique": ["Algérie", "Angola", "Bénin", "Botswana", "Burkina Faso", "Burundi", "Cameroun", "Cap-Vert", "Comores", "Congo", "Côte d'Ivoire", "Djibouti", "Égypte", "Érythrée", "Eswatini", "Éthiopie", "Gabon", "Gambie", "Ghana", "Guinée", "Guinée-Bissau", "Guinée équatoriale", "Kenya", "Lesotho", "Libéria", "Libye", "Madagascar", "Malawi", "Mali", "Maroc", "Maurice", "Mauritanie", "Mozambique", "Namibie", "Niger", "Nigéria", "Ouganda", "République centrafricaine", "République démocratique du Congo", "Rwanda", "Sao Tomé-et-Principe", "Sénégal", "Seychelles", "Sierra Leone", "Somalie", "Soudan", "Soudan du Sud", "Tanzanie", "Tchad", "Togo", "Tunisie", "Zambie", "Zimbabwe"],
+      "Europe": ["Albanie", "Allemagne", "Andorre", "Autriche", "Belgique", "Biélorussie", "Bosnie-Herzégovine", "Bulgarie", "Chypre", "Croatie", "Danemark", "Espagne", "Estonie", "Finlande", "France", "Grèce", "Hongrie", "Irlande", "Islande", "Italie", "Kosovo", "Lettonie", "Liechtenstein", "Lituanie", "Luxembourg", "Macédoine du Nord", "Malte", "Moldavie", "Monaco", "Monténégro", "Norvège", "Pays-Bas", "Pologne", "Portugal", "République tchèque", "Roumanie", "Royaume-Uni", "Russie", "Saint-Marin", "Serbie", "Slovaquie", "Slovénie", "Suède", "Suisse", "Ukraine", "Vatican"],
+      "Asie": ["Afghanistan", "Arabie saoudite", "Arménie", "Azerbaïdjan", "Bahreïn", "Bangladesh", "Bhoutan", "Birmanie", "Brunei", "Cambodge", "Chine", "Corée du Nord", "Corée du Sud", "Émirats arabes unis", "Géorgie", "Inde", "Indonésie", "Irak", "Iran", "Israël", "Japon", "Jordanie", "Kazakhstan", "Kirghizistan", "Koweït", "Laos", "Liban", "Malaisie", "Maldives", "Mongolie", "Népal", "Oman", "Ouzbékistan", "Pakistan", "Palestine", "Philippines", "Qatar", "Singapour", "Sri Lanka", "Syrie", "Tadjikistan", "Taïwan", "Thaïlande", "Timor oriental", "Turkménistan", "Turquie", "Viêt Nam", "Yémen"],
+      "Amérique": ["Antigua-et-Barbuda", "Argentine", "Bahamas", "Barbade", "Belize", "Bolivie", "Brésil", "Canada", "Chili", "Colombie", "Costa Rica", "Cuba", "Dominique", "Équateur", "États-Unis", "Grenade", "Guatemala", "Guyana", "Haïti", "Honduras", "Jamaïque", "Mexique", "Nicaragua", "Panama", "Paraguay", "Pérou", "République dominicaine", "Saint-Kitts-et-Nevis", "Saint-Vincent-et-les-Grenadines", "Sainte-Lucie", "Salvador", "Suriname", "Trinité-et-Tobago", "Uruguay", "Venezuela"],
+      "Océanie": ["Australie", "Fidji", "Kiribati", "Îles Marshall", "Micronésie", "Nauru", "Nouvelle-Zélande", "Palaos", "Papouasie-Nouvelle-Guinée", "Samoa", "Îles Salomon", "Tonga", "Tuvalu", "Vanuatu"]
+    };
+
+    const allCountries = Object.values(continents).flat();
+    let mode = "world";
+    let selectedContinent = null;
+    let usedCountries = {
+      world: [],
+      Afrique: [],
+      Europe: [],
+      Asie: [],
+      Amérique: [],
+      Océanie: []
+    };
+
+    const worldBtn = document.getElementById("worldBtn");
+    const continentBtn = document.getElementById("continentBtn");
+    const continentSelectContainer = document.getElementById("continentSelectContainer");
+    const continentSelect = document.getElementById("continentSelect");
+    const chooseBtn = document.getElementById("chooseBtn");
+    const output = document.getElementById("output");
+    const resetBtn = document.getElementById("resetBtn");
+
+    worldBtn.addEventListener("click", () => {
+      mode = "world";
+      selectedContinent = null;
+      continentSelectContainer.style.display = "none";
+    });
+
+    continentBtn.addEventListener("click", () => {
+      mode = "continent";
+      continentSelectContainer.style.display = "block";
+    });
+
+    continentSelect.addEventListener("change", (e) => {
+      selectedContinent = e.target.value;
+    });
+
+    chooseBtn.addEventListener("click", () => {
+      let available;
+      let key;
+      if (mode === "continent") {
+        if (!selectedContinent || !continents[selectedContinent]) {
+          output.textContent = "Veuillez choisir un continent.";
+          return;
+        }
+        key = selectedContinent;
+        available = continents[key].filter(c => !usedCountries[key].includes(c));
+      } else {
+        key = "world";
+        available = allCountries.filter(c => !usedCountries[key].includes(c));
+      }
+
+      if (available.length === 0) {
+        output.textContent = "Tous les pays ont été sélectionnés.";
+        return;
+      }
+
+      const random = available[Math.floor(Math.random() * available.length)];
+      usedCountries[key].push(random);
+      output.textContent = `Pays choisi : ${random}`;
+    });
+
+    resetBtn.addEventListener("click", () => {
+      for (let key in usedCountries) {
+        usedCountries[key] = [];
+      }
+      output.textContent = "Réinitialisé.";
+    });
+  </script>
+</body>
+</html>
+
